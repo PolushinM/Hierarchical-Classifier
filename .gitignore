@@ -13,7 +13,7 @@ categories_tree.csv
 *.tar
 *.parquet
 /.ipynb_checkpoints/**
-
+/FastTextBoost/**
 
 
 # Byte-compiled / optimized / DLL files
