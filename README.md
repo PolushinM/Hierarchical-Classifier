@@ -129,9 +129,9 @@
 #### Сводная таблица результатов.
 | №   | Model | Classifier type | Output model | hF1 |
 | --- | ----------- | ----------- | ----------- |:----:| 
-| 1. |	Fasttext |	Flat	Fasttext native | 0.918
+| 1. |	Fasttext | Flat | Fasttext native | 0.918
 | 2. |	Fasttext encoder + PyTorch custom loss | Flat + Hierarchical loss function | PyTorch | 0.916 | 
-| 3. |	Fasttext encoder + + PyTorch |  Flat | PyTorch | 0.914 | 
+| 3. |	Fasttext encoder + PyTorch |  Flat | PyTorch | 0.914 |
 | 4. |	Hierarchical model + fasttext, navec, LDA encoders |	Hierarchical, Classifier per node | Tree traversal algorithm | 0.9 | 
 | 5. |	Hierarchical model + navec, LDA encoders + Catboost global classifier	 | Hierarchical, Classifier per node, global classifier | Tree traversal algorithm | 0.86 | 
 | 6. |	Hierarchical model + navec, LDA encoders | Hierarchical, Classifier per node | Tree traversal algorithm | 0.86 | 
