@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import Union, Tuple
 import os
 from pathlib import Path
@@ -113,7 +114,7 @@ class CategoryTree(object):
                                                           (self.tree[node_id]['good_count']) ** 0.5 + weight)
         return
 
-    def get_siblings_ids(self, node_id: int) -> Union[set, None]:
+    def get_siblings_ids(self, node_id: int) -> [set | None]:
         if (node_id not in self.tree) or (self[node_id]['good_count'] == 0):
             return None
         parent = self[node_id]['parent_id']
@@ -153,19 +154,27 @@ class CategoryTree(object):
         self.proba_cache = dict()
         return current_id, leaf_proba
 
-    def choose_leaf_proba_upwards(self, leaf_ids_probas: list,
+    def choose_leaf_proba_upwards(self, leaf_ids_probas: List[Tuple[int, float]],
                                   classifier: callable,
-                                  embeddings_dict: dict, proba_power: float = 1) -> Tuple[int, float]:
+                                  good_embedding: np.array, proba_power: float = 1.,
+                                  sib_proba_power: float = 0.) -> Tuple[int, float]:
         max_proba = 0.
         best_leaf = 1
         for leaf_id, leaf_proba in leaf_ids_probas:
-            next_node = leaf_id['parent_id']
+            next_node = self.tree[leaf_id]['parent_id']
             proba = leaf_proba
             while next_node > 1:
                 proba *= self.eval_node_proba(node_id=next_node,
                                               classifier=classifier,
-                                              good_embedding=embeddings_dict[next_node]) ** proba_power
-                next_node = next_node['parent_id']
+                                              good_embedding=good_embedding) ** proba_power
+                siblings = self.get_siblings_ids(next_node)
+                sibl_proba = sib_proba_power
+                for sibling in siblings:
+                    sibl_proba += self.eval_node_proba(node_id=sibling,
+                                                       classifier=classifier,
+                                                       good_embedding=good_embedding)
+                proba /= (sibl_proba / (len(siblings) + 0.5) ** 0.3)
+                next_node = self.tree[next_node]['parent_id']
             if proba > max_proba:
                 max_proba = proba
                 best_leaf = leaf_id
@@ -196,7 +205,7 @@ class CategoryTree(object):
                              good_embedding: np.array = None,
                              document: str = None,
                              classifier: callable = None) -> float:
-
+        """Probability of node membership for certain commodity with considering child nodes probabilities"""
         self_proba = self.eval_node_proba(node_id,
                                           classifier=classifier,
                                           good_embedding=good_embedding,
@@ -221,7 +230,7 @@ class CategoryTree(object):
                         classifier: callable,
                         good_embedding: np.array = None,
                         document: str = None) -> float:
-
+        """Probability of node membership for certain commodity without considering child nodes probabilities"""
         if node_id in self.proba_cache:
             return self.proba_cache[node_id]
         elif document:
@@ -293,6 +302,7 @@ class CategoryTree(object):
 
     def fit_local_weights(self, classifier: object, embeddings_dict: dict, C: int = 1,
                           reg_count_power: float = 0.4, verbose=False) -> None:
+        """Fitting of all local node classifiers, saving weights and intercept of logistic regression in tree"""
         for key in tqdm.tqdm(list(self.keys()), total=len(self)):
             siblings = self.get_siblings_ids(key)
             if siblings:

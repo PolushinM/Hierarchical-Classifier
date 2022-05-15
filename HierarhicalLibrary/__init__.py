@@ -1,3 +1,4 @@
 from .CategoryTree import CategoryTree
 from .Classifier import Classifier
-from .Encoder import Encoder
+from .Encoders import LdaEncoder, NavecEncoder, FasttextEncoder, BertEncoder
+from .TextProcessor import TextProcessor
